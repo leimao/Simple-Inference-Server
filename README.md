@@ -27,6 +27,16 @@ To run Docker container for a client, we don't need GPU at all.
 $ docker run -it --rm --network=host -v $(pwd):/mnt qa-server:0.0.1
 ```
 
+### Prepare Models
+
+Before running a inference server, we have to prepare the machine learning models accordingly.
+
+```
+$ prepare_model.py
+```
+
+A PyTorch BERT-QA model and its ONNX conversion will be saved to a `saved_models` directory.
+
 ### Run Server and Client
 
 #### Local Host
@@ -105,6 +115,41 @@ optional arguments:
 ```
 
 ### Stress Test
+
+#### Multi-process Client Simulation
+
+The server could be stress tested in small scale on a PC with a multi-core CPU.
+
+```
+$ python stress_test.py --host localhost
+100%|█████████████████████████████████████████| 100/100 [00:05<00:00, 19.86it/s]
+Client Latencies Measured: 
+Mean: 25.058329820632935 ms
+Std: 1.3205614012742213 ms
+```
+
+The test parameters, such as the number of simultaneous clients, are also configurable.
+
+```
+$ python stress_test.py --help
+usage: stress_test.py [-h] [--host HOST] [--port PORT]
+                      [--num_simultaneous_clients NUM_SIMULTANEOUS_CLIENTS]
+                      [--num_total_clients NUM_TOTAL_CLIENTS]
+                      [--num_request_per_client NUM_REQUEST_PER_CLIENT]
+
+Question and answer server.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --host HOST           Default host IP. (default: localhost)
+  --port PORT           Default port ID. (default: 9999)
+  --num_simultaneous_clients NUM_SIMULTANEOUS_CLIENTS
+                        Number of simultaneous clients. (default: 5)
+  --num_total_clients NUM_TOTAL_CLIENTS
+                        Number of total clients. (default: 100)
+  --num_request_per_client NUM_REQUEST_PER_CLIENT
+                        Number of request per client. (default: 10)
+```
 
 #### AMD64 Platform
 

@@ -33,16 +33,17 @@ def main() -> None:
     tokenizer.save_pretrained(os.path.join(output_dir, tokenizer_name))
     config.save_pretrained(os.path.join(output_dir, torch_model_config_name))
 
+    # Dummy inputs
     inputs = {
-        'input_ids':      torch.zeros((1, max_seq_length)).long(),
-        'attention_mask': torch.zeros((1, max_seq_length)).long(),
-        'token_type_ids': torch.zeros((1, max_seq_length)).long(),
+        "input_ids":      torch.zeros((1, max_seq_length)).long(),
+        "attention_mask": torch.zeros((1, max_seq_length)).long(),
+        "token_type_ids": torch.zeros((1, max_seq_length)).long(),
     }
 
     model.eval()
 
     with torch.no_grad():
-        symbolic_names = {0: 'batch_size', 1: 'max_seq_len'}
+        symbolic_names = {0: "batch_size", 1: "max_seq_len"}
         torch.onnx.export(
             model,                                            # model being run
             args=tuple(inputs.values()),                      # model input (or a tuple for multiple inputs)
@@ -50,17 +51,17 @@ def main() -> None:
             opset_version=onnx_opset_version,                      # the ONNX version to export the model to
             do_constant_folding=True,                         # whether to execute constant folding for optimization
             input_names=[
-                'input_ids',                         # the model's input names
-                'input_mask', 
-                'segment_ids'
+                "input_ids",                         # the model's input names
+                "input_mask", 
+                "segment_ids",
             ],
             output_names=['start', 'end'],                    # the model's output names
             dynamic_axes={
-                'input_ids': symbolic_names,        # variable length axes
-                'input_mask' : symbolic_names,
-                'segment_ids' : symbolic_names,
-                'start' : symbolic_names,
-                'end' : symbolic_names
+                "input_ids" : symbolic_names,        # variable length axes
+                "input_mask" : symbolic_names,
+                "segment_ids" : symbolic_names,
+                "start" : symbolic_names,
+                "end" : symbolic_names,
             }
         )
         print("Model exported at ", os.path.join(output_dir, onnx_model_name))
