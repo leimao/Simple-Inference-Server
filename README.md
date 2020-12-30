@@ -164,7 +164,7 @@ ONNX Runtime CUDA inference session with one `intra_op_num_threads`. The ONNX in
 
 #### ARM64 Platform
 
-ONNX Runtime CPU inference session with one `intra_op_num_threads` was used for the stress test in this case, since there is no ONNX Runtime GPU version directly available via `pip`. The inference latency was ~30x (5W mode) slower than the inference latency from the CUDA inference session on the amd64 platform above. Increasing `intra_op_num_threads` might increase the performance of inference. The arm64 platform is NVIDIA Jetson-Nano. Latencies were measured from the clients.
+ONNX Runtime CPU inference session with one `intra_op_num_threads` was used for the stress test in this case, since there is no ONNX Runtime GPU version directly available via `pip`. The inference latency was ~100x (5W mode) slower than the inference latency from the CUDA inference session on the amd64 platform above. Increasing `intra_op_num_threads` might increase the performance of inference. The arm64 platform is NVIDIA Jetson-Nano. Latencies were measured from the clients.
 
 
 ### TODO
