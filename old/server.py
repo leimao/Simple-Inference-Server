@@ -1,67 +1,36 @@
+# Modified from
+# https://docs.python.org/3.8/library/socketserver.html#asynchronous-mixins
+
 import socket
 import threading
+import socketserver
 
-#Variables for holding information about connections
-connections = []
-total_connections = 0
+class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
-#Client class, new instance created for each connected client
-#Each instance has the socket and address that is associated with items
-#Along with an assigned ID and a name chosen by the client
-class Client(threading.Thread):
-    def __init__(self, socket, address, id, name, signal):
-        threading.Thread.__init__(self)
-        self.socket = socket
-        self.address = address
-        self.id = id
-        self.name = name
-        self.signal = signal
-    
-    def __str__(self):
-        return str(self.id) + " " + str(self.address)
-    
-    #Attempt to get data from client
-    #If unable to, assume client has disconnected and remove him from server data
-    #If able to and we get data back, print it in the server and send it back to every
-    #client aside from the client that has sent it
-    #.decode is used to convert the byte data into a printable string
-    def run(self):
-        while self.signal:
+    def handle(self):
+        while True:
             try:
-                data = self.socket.recv(32)
+                data = str(self.request.recv(1024), 'utf-8')
+                print("{} wrote:".format(self.client_address[0]))
+                print(data)
+                cur_thread = threading.current_thread()
+                print("Number of active threads: {}".format(threading.active_count()))
+                response = bytes("{}: {}".format(cur_thread.name, data), 'utf-8')
+                self.request.sendall(response)
             except:
-                print("Client " + str(self.address) + " has disconnected")
-                self.signal = False
-                connections.remove(self)
+                print("Connection lost.")
                 break
-            if data != "":
-                print("ID " + str(self.id) + ": " + str(data.decode("utf-8")))
-                for client in connections:
-                    if client.id != self.id:
-                        client.socket.sendall(data)
 
-#Wait for new connections
-def newConnections(socket):
-    while True:
-        sock, address = socket.accept()
-        global total_connections
-        connections.append(Client(sock, address, total_connections, "Name", True))
-        connections[len(connections) - 1].start()
-        print("New connection at ID " + str(connections[len(connections) - 1]))
-        total_connections += 1
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    pass
 
-def main():
-    #Get host and port
-    host = input("Host: ")
-    port = int(input("Port: "))
+if __name__ == "__main__":
+    # Port 0 means to select an arbitrary unused port
+    # HOST, PORT = "localhost", 9999
+    HOST, PORT = "0.0.0.0", 9999
 
-    #Create new server socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind((host, port))
-    sock.listen(5)
-
-    #Create new thread to wait for connections
-    newConnectionsThread = threading.Thread(target = newConnections, args = (sock,))
-    newConnectionsThread.start()
-    
-main()
+    # Create the server, binding to localhost on port 9999
+    with ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler) as server:
+        # Activate the server; this will keep running until you
+        # interrupt the program with Ctrl-C
+        server.serve_forever()
