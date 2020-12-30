@@ -90,7 +90,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 def main() -> None:
 
-    host_default = "0.0.0.0"
+    host_default = "localhost"
     port_default = 9999
     num_inference_sessions_default = 2
     inference_engine_type_default = "onnx"
@@ -113,6 +113,8 @@ def main() -> None:
     tokenizer_filepath = "./saved_models/bert-base-cased-squad2_tokenizer.pt"
 
     global request_content_queue
+    # Do not use multiple queues. 
+    # It will slow down Python application significantly.
     request_content_queue = queue.Queue()
 
     # Number of inference sessions.
