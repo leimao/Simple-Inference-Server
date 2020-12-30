@@ -61,7 +61,7 @@ To run a client connecting to the server from another one local PC.
 $ python client.py --host <server-IP>
 ```
 
-### Run QA-Service
+#### QA Service Demo
 
 To run QA service from the client, we need to input a question and a piece of text where the answer to the question lies. The answer analyzed by the QA server will be sent back to the client once the inference request is processed.
 
