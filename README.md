@@ -167,13 +167,13 @@ ONNX Runtime CUDA inference session with one `intra_op_num_threads`. The ONNX in
 ONNX Runtime CPU inference session with one `intra_op_num_threads` was used for the stress test in this case, since there is no ONNX Runtime GPU version directly available via `pip`. The inference latency was ~100x (5W mode) slower than the inference latency from the CUDA inference session on the amd64 platform above. Increasing `intra_op_num_threads` might increase the performance of inference. The arm64 platform is NVIDIA Jetson-Nano. Latencies were measured from the clients.
 
 
-### TODO
+## TODO
 
 - [ ] Investigate whether Python GIL is a problem for high-load concurrency.
 - [ ] Try process-safe queue and multiple inference engine worker processes to see whether the high-load concurrency could be further improved.
 - [ ] Implement TensorRT inference engine backend.
 
-### References
+## References
 
 * [BERT-QA Inference](https://leimao.github.io/blog/PyTorch-Dynamic-Quantization/)
 * [BERT ONNX Conversion](https://github.com/microsoft/onnxruntime/blob/master/onnxruntime/python/tools/transformers/notebooks/PyTorch_Bert-Squad_OnnxRuntime_GPU.ipynb)
