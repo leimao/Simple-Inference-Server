@@ -1,5 +1,10 @@
 # Simple Inference Server
 
+## Introduction
+
+Implementation of a simple multi-thread TCP/IP server for machine learning model inference. Specifically, Question and Answering (QA) service was implemented as an example. The server is designed to have a thread-safe queue where all the inference requests were hold and multiple inference engine threads will process the inference requests concurrently.
+
+
 ## Usages
 
 ### Build Docker Image
@@ -10,13 +15,13 @@ $ docker build -f docker/server_amd64.Dockerfile --no-cache --tag=qa-server:0.0.
 
 ### Run Docker Container
 
-To run Docker container for a server, because we have to use GPU for inference, please run the following command.
+To run Docker container for a server, we have to use GPU for inference.
 
 ```
 $ docker run -it --rm --gpus device=0 --network=host -v $(pwd):/mnt qa-server:0.0.1
 ```
 
-To run Docker container for a client, we don't need GPU at all, please run the following command.
+To run Docker container for a client, we don't need GPU at all.
 
 ```
 $ docker run -it --rm --network=host -v $(pwd):/mnt qa-server:0.0.1
@@ -24,14 +29,14 @@ $ docker run -it --rm --network=host -v $(pwd):/mnt qa-server:0.0.1
 
 #### One PC
 
-To run a server, please run the following command.
+To run a server.
 
 
 ```
 $ python server.py --host localhost
 ```
 
-To run a client, please run the following command.
+To run a client.
 
 
 ```
@@ -40,18 +45,39 @@ $ python client.py --host localhost
 
 #### Multiple PC
 
-To run a server on one PC, please run the following command.
+To run a server on one PC.
 
 
 ```
 $ python server.py --host 0.0.0.0
 ```
 
-To run a client on another PC, please run the following command.
+To run a client on another PC.
 
 
 ```
 $ python client.py --host <server-IP>
+```
+
+### Run QA-Service
+
+To run QA service from the client, we need to input a question and a piece of text where the answer to the question lies. The answer analyzed by the QA server will be sent back to the client once the inference request is processed.
+
+```
+$ python client.py --host localhost
+==================================================
+QA Client
+==================================================
+Please Input Text: 
+According to PolitiFact the top 400 richest Americans "have more wealth than half of all Americans combined." According to the New York Times on July 22, 2014, the "richest 1 percent in the United States now own more wealth than the bottom 90 percent". Inherited wealth may help explain why many Americans who have become rich may have had a "substantial head start". In September 2012, according to the Institute for Policy Studies, "over 60 percent" of the Forbes richest 400 Americans "grew up in substantial privilege".
+--------------------------------------------------
+Please Input Question: 
+What publication printed that the wealthiest 1% have more money than those in the bottom 90%?
+--------------------------------------------------
+Answer: 
+New York Times
+(Latency: 28.34296226501465 ms)
+--------------------------------------------------
 ```
 
 ### Stress Test
