@@ -15,16 +15,23 @@ docker build -f docker/server_amd64.Dockerfile --no-cache --tag=qa-server:0.0.1 
 To run a server, please run the following command.
 
 ```
-docker run -it --rm --gpus device=0 --host=network -v $(pwd):/mnt qa-server:0.0.1
+docker run -it --rm --gpus device=0 --network=host -v $(pwd):/mnt qa-server:0.0.1
+```
+
+```
+python server.py
 ```
 
 To run a client, please run the following command.
 
 
 ```
-docker run -it --rm --host=network -v $(pwd):/mnt qa-server:0.0.1
+docker run -it --rm --network=host -v $(pwd):/mnt qa-server:0.0.1
 ```
 
+```
+python client.py
+```
 
 #### Multiple PC
 
@@ -38,15 +45,18 @@ To run a client on another PC, please run the following command.
 
 
 ```
-docker run -it --rm -p 9999:9999 -v $(pwd):/mnt qa-server:0.0.1
+docker run -it --rm --network=host -v $(pwd):/mnt qa-server:0.0.1
 ```
 
+```
+python client.py --host <server-IP>
+```
 
 ### Stress Test
 
 #### AMD64 Platform
 
-ONNX Runtime CUDA inference session. Server and clients on one single PC (I know this is bad for stress test). Intel i9-9900K + NVIDIA RTX 2080 TI.
+ONNX Runtime CUDA inference session with one `intra_op_num_threads`. The ONNX inference session does not run entirely on GPU as some ONNX operators were not supported on GPU and fall back to CPU. ONNX Runtime CPU inference session was not used as it was 10x slower than CUDA inference session. Server and clients on one single PC (I know this is bad for stress test). Intel i9-9900K + NVIDIA RTX 2080 TI. Latency measured from the clients.
 
 | Number of Inference Sessions |  1 Client  |  5 Clients |  20 Clients  |  50 Clients  |
 |:----------------------------:|:----------:|:----------:|:------------:|:------------:|

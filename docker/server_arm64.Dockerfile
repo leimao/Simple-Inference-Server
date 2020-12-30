@@ -46,4 +46,4 @@ ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 
-RUN pip install transformers==4.1.1 wget==3.2.0 onnx==1.8.0 onnxruntime-gpu==1.6.0
+RUN pip install transformers==4.1.1 onnxruntime==1.6.0
