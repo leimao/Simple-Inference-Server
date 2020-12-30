@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Implementation of a simple multi-thread TCP/IP server for machine learning model inference. Specifically, Question and Answering (QA) service was implemented as an example. The server is designed to have a thread-safe queue where all the inference requests were hold and multiple inference engine threads will process the inference requests concurrently.
+Implementation of a simple multi-thread TCP/IP server for machine learning model inference. Specifically, Question and Answering (QA) service was implemented as an example. The server is designed to have a thread-safe queue where all the inference requests were hold and multiple inference engine worker threads will process the inference requests concurrently.
 
 
 ## Usages
@@ -61,7 +61,7 @@ To run a client connecting to the server from another one local PC.
 $ python client.py --host <server-IP>
 ```
 
-#### QA Service Demo
+#### QA Service Client Demo
 
 To run QA service from the client, we need to input a question and a piece of text where the answer to the question lies. The answer analyzed by the QA server will be sent back to the client once the inference request is processed.
 
@@ -82,11 +82,33 @@ New York Times
 --------------------------------------------------
 ```
 
+#### Other Server Choices
+
+Both ONNX and PyTorch inference engines were implemented as the backends for the QA service. The number of inference sessions is also configurable.
+
+```
+$ python server.py --help
+usage: server.py [-h] [--host HOST] [--port PORT]
+                 [--num_inference_sessions NUM_INFERENCE_SESSIONS]
+                 [--inference_engine_type {onnx,pytorch}]
+
+Question and answer server.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --host HOST           Default host IP. (default: 0.0.0.0)
+  --port PORT           Default port ID. (default: 9999)
+  --num_inference_sessions NUM_INFERENCE_SESSIONS
+                        Number of inference sessions. (default: 2)
+  --inference_engine_type {onnx,pytorch}
+                        Inference engine type. (default: onnx)
+```
+
 ### Stress Test
 
 #### AMD64 Platform
 
-ONNX Runtime CUDA inference session with one `intra_op_num_threads`. The ONNX inference session does not run entirely on GPU as some ONNX operators were not supported on GPU and fall back to CPU. ONNX Runtime CPU inference session was not used as it was ~10x slower than CUDA inference session. The amd64 platform is Intel i9-9900K + NVIDIA RTX 2080 TI. Latency measured from the clients.
+ONNX Runtime CUDA inference session with one `intra_op_num_threads`. The ONNX inference session does not run entirely on GPU as some ONNX operators used for the QA model were not supported on GPU and fall back to CPU. ONNX Runtime CPU inference session was not used as it was ~10x slower than CUDA inference session. The amd64 platform is Intel i9-9900K + NVIDIA RTX 2080 TI. Latencies were measured from the clients.
 
 | Number of Inference Sessions |  1 Client  |  5 Clients |  20 Clients  |  50 Clients  |
 |:----------------------------:|:----------:|:----------:|:------------:|:------------:|
@@ -97,4 +119,17 @@ ONNX Runtime CUDA inference session with one `intra_op_num_threads`. The ONNX in
 
 #### ARM64 Platform
 
-ONNX Runtime CPU inference session was used for the stress test in this case, since there is no ONNX Runtime GPU version directly available via `pip`. The inference latency was ~30x (5W mode) slower than the inference latency from the CUDA inference session on the amd64 platform above. The arm64 platform is Jetson-Nano. Latency measured from the clients.
+ONNX Runtime CPU inference session with one `intra_op_num_threads` was used for the stress test in this case, since there is no ONNX Runtime GPU version directly available via `pip`. The inference latency was ~30x (5W mode) slower than the inference latency from the CUDA inference session on the amd64 platform above. Increasing `intra_op_num_threads` might increase the performance of inference. The arm64 platform is Jetson-Nano. Latencies were measured from the clients.
+
+
+### TODO
+
+- [ ] Investigate whether Python GIL is a problem for high-load concurrency.
+- [ ] Try process-safe queue and multiple inference engine worker processes to see whether the high-load concurrency could be further improved.
+
+### References
+
+* [BERT-QA Inference](https://leimao.github.io/blog/PyTorch-Dynamic-Quantization/)
+* [BERT ONNX Conversion](https://github.com/microsoft/onnxruntime/blob/master/onnxruntime/python/tools/transformers/notebooks/PyTorch_Bert-Squad_OnnxRuntime_GPU.ipynb)
+* [Python Socket Server](https://docs.python.org/3.8/library/socketserver.html)
+* [Python Server with Queue](https://stackoverflow.com/questions/46138771/python-multipleclient-server-with-queues)
