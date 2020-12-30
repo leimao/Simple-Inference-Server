@@ -8,6 +8,7 @@ import socketserver
 import queue
 import json
 import argparse
+import time
 from typing import Tuple
 from qa import QaTorchInferenceSession, QaOnnxInferenceSession
 
@@ -53,8 +54,12 @@ class InferenceExecutionThread(threading.Thread):
                 handler, data_dict = request_content_queue.get()
                 question = data_dict["question"]
                 text = data_dict["text"]
+                start_time = time.time()
                 answer = self.inference_session.run(question=question,
                                                     text=text)
+                end_time = time.time()
+                latency = (end_time - start_time) * 1000
+                print("Server Inference Latency: {} ms".format(latency))
                 if answer in ["", "[CLS]"]:
                     answer = "Unknown"
                 response = bytes(answer, "utf-8")
