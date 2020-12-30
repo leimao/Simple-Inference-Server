@@ -1,59 +1,57 @@
-# Inference Server Prototype
+# Simple Inference Server
 
 ## Usages
 
 ### Build Docker Image
 
 ```
-docker build -f docker/server_amd64.Dockerfile --no-cache --tag=qa-server:0.0.1 .
+$ docker build -f docker/server_amd64.Dockerfile --no-cache --tag=qa-server:0.0.1 .
 ```
 
 ### Run Docker Container
+
+To run Docker container for a server, because we have to use GPU for inference, please run the following command.
+
+```
+$ docker run -it --rm --gpus device=0 --network=host -v $(pwd):/mnt qa-server:0.0.1
+```
+
+To run Docker container for a client, we don't need GPU at all, please run the following command.
+
+```
+$ docker run -it --rm --network=host -v $(pwd):/mnt qa-server:0.0.1
+```
 
 #### One PC
 
 To run a server, please run the following command.
 
-```
-docker run -it --rm --gpus device=0 --network=host -v $(pwd):/mnt qa-server:0.0.1
-```
 
 ```
-python server.py --host localhost
+$ python server.py --host localhost
 ```
 
 To run a client, please run the following command.
 
 
 ```
-docker run -it --rm --network=host -v $(pwd):/mnt qa-server:0.0.1
-```
-
-```
-python client.py --host localhost
+$ python client.py --host localhost
 ```
 
 #### Multiple PC
 
 To run a server on one PC, please run the following command.
 
-```
-docker run -it --rm --gpus device=0 --network=host -v $(pwd):/mnt qa-server:0.0.1
-```
 
 ```
-python server.py --host 0.0.0.0
+$ python server.py --host 0.0.0.0
 ```
 
 To run a client on another PC, please run the following command.
 
 
 ```
-docker run -it --rm --network=host -v $(pwd):/mnt qa-server:0.0.1
-```
-
-```
-python client.py --host <server-IP>
+$ python client.py --host <server-IP>
 ```
 
 ### Stress Test
@@ -71,4 +69,4 @@ ONNX Runtime CUDA inference session with one `intra_op_num_threads`. The ONNX in
 
 #### ARM64 Platform
 
-ONNX Runtime CPU inference session was used for the stress test in this case, since there is no ONNX Runtime GPU version directly available via `pip`. The inference latency was ~30x slower than the inference latency from the CUDA inference session on the amd64 platform above. The arm64 platform is Jetson-Nano. Latency measured from the clients.
+ONNX Runtime CPU inference session was used for the stress test in this case, since there is no ONNX Runtime GPU version directly available via `pip`. The inference latency was ~30x (5W mode) slower than the inference latency from the CUDA inference session on the amd64 platform above. The arm64 platform is Jetson-Nano. Latency measured from the clients.
