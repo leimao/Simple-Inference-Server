@@ -1,8 +1,9 @@
 import os
 import torch
+from typing import Tuple
 from transformers import BertConfig, BertTokenizer, BertForQuestionAnswering
 
-def get_bert_qa_model(model_name="deepset/bert-base-cased-squad2", cache_dir="./cache"):
+def get_bert_qa_model(model_name="deepset/bert-base-cased-squad2", cache_dir="./cache") -> Tuple[BertConfig, BertForQuestionAnswering, BertTokenizer]:
 
     # https://huggingface.co/transformers/model_doc/bert.html#transformers.BertForQuestionAnswering
     config = BertConfig.from_pretrained(model_name, cache_dir=cache_dir)
@@ -11,7 +12,7 @@ def get_bert_qa_model(model_name="deepset/bert-base-cased-squad2", cache_dir="./
 
     return config, model, tokenizer
 
-def main():
+def main() -> None:
 
     model_name = "deepset/bert-base-cased-squad2"
     cache_dir = "./cache"

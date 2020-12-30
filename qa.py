@@ -12,7 +12,7 @@ class QaInferenceSession(object):
         self.model_filepath = model_filepath
         self.tokenizer_filepath = tokenizer_filepath
 
-    def run(self, question, text):
+    def run(self, question: str, text: str) -> str:
 
         raise NotImplementedError
 
@@ -27,7 +27,7 @@ class QaTorchInferenceSession(QaInferenceSession):
         self.device = device
         self.model.to(self.device)
 
-    def prepare_qa_inputs(self, question, text, device=None) -> Dict[str, torch.Tensor]:
+    def prepare_qa_inputs(self, question: str, text: str) -> Dict[str, torch.Tensor]:
 
         inputs = self.tokenizer(question, text, return_tensors="pt")
         if self.device is not None:
@@ -38,7 +38,7 @@ class QaTorchInferenceSession(QaInferenceSession):
         
         return inputs
 
-    def run(self, question, text):
+    def run(self, question: str, text: str) -> str:
 
         inputs = self.prepare_qa_inputs(question=question, text=text)
         all_tokens = self.tokenizer.convert_ids_to_tokens(inputs["input_ids"].cpu().numpy()[0])
@@ -62,6 +62,8 @@ class QaOnnxInferenceSession(QaInferenceSession):
 
         sess_options = onnxruntime.SessionOptions()
         sess_options.intra_op_num_threads = num_intra_op_num_threads
+        # Log severity level for a particular Run() invocation. 0:Verbose, 1:Info, 2:Warning. 3:Error, 4:Fatal. Default is 2.
+        sess_options.log_severity_level = 2
         # Set graph optimization level
         sess_options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_EXTENDED
 
@@ -75,7 +77,7 @@ class QaOnnxInferenceSession(QaInferenceSession):
         self.session.set_providers(execution_providers)
         self.tokenizer = BertTokenizer.from_pretrained(self.tokenizer_filepath)
 
-    def run(self, question, text):
+    def run(self, question: str, text: str) -> str:
 
         inputs = self.tokenizer(question, text, return_tensors="np")
         all_tokens = self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
@@ -108,7 +110,6 @@ if __name__ == "__main__":
     torch_inference_session = QaTorchInferenceSession(model_filepath=torch_model_filepath, tokenizer_filepath=tokenizer_filepath)
 
     question = "What publication printed that the wealthiest 1% have more money than those in the bottom 90%?"
-
     text = "According to PolitiFact the top 400 richest Americans \"have more wealth than half of all Americans combined.\" According to the New York Times on July 22, 2014, the \"richest 1 percent in the United States now own more wealth than the bottom 90 percent\". Inherited wealth may help explain why many Americans who have become rich may have had a \"substantial head start\". In September 2012, according to the Institute for Policy Studies, \"over 60 percent\" of the Forbes richest 400 Americans \"grew up in substantial privilege\"."
 
     onnx_answer = onnx_inference_session.run(question=question, text=text)

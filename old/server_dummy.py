@@ -25,6 +25,7 @@ class InferenceExecutionThread(threading.Thread):
         # We can put tasks into queue from multiple threads safely.
         self.model_filepath = model_filepath
         self.tokenizer_filepath = tokenizer_filepath
+        self.request_content_queue = queue.Queue()
         self.inference_engine_type = inference_engine_type
         if self.inference_engine_type == "onnx":
             self.inference_session = QaOnnxInferenceSession(model_filepath=self.model_filepath, tokenizer_filepath=self.tokenizer_filepath)
@@ -32,6 +33,26 @@ class InferenceExecutionThread(threading.Thread):
             self.inference_session = QaTorchInferenceSession(model_filepath=self.model_filepath, tokenizer_filepath=self.tokenizer_filepath)
         else:
             raise RuntimeError("Unsupported inference engine type.")
+    
+    def put_task(self, task: Tuple[socketserver.BaseRequestHandler, str]) -> None:
+        """
+        Put task into the queue.
+
+        Args:
+            task (Tuple[socketserver.BaseRequestHandler, str]): task content.
+        """
+
+        self.request_content_queue.put(task)
+
+    def get_qsize(self) -> int:
+        """
+        Return the approximate size of the queue.
+
+        Returns:
+            int: The approximate size of the queue.
+        """
+
+        return self.request_content_queue.qsize()
 
     def run(self) -> None:
         """
@@ -39,25 +60,30 @@ class InferenceExecutionThread(threading.Thread):
         """
 
         while True:
-            if not request_content_queue.empty():
-                print("Current Thread: {}, Number of Active Threads: {}".format(threading.current_thread().name, threading.active_count()))
-                handler, data_dict = request_content_queue.get()
-                question = data_dict["question"]
-                text = data_dict["text"]
-                answer = self.inference_session.run(question=question, text=text)
-                if answer in ["", "[CLS]"]:
-                    answer = "Unknown"
-                response = bytes(answer, "utf-8")
-                print("Sending answer \"{}\" ...".format(answer))
-                handler.request.sendall(response)
-                request_content_queue.task_done()
-                print("Inference Done.")
+            if not self.request_content_queue.empty():
+                a = 1
 
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """
     TCP request handler.
     """
+
+    def find_shortest_queue(self) -> int:
+        """
+        Find approximately the shortest queue.
+
+        Returns:
+            int: The index of the execution thread that has approximately the shortest queue.
+        """
+        qsizes = [execution_thread.get_qsize() for execution_thread in execution_threads]
+        min_qsize = float("inf")
+        min_idx = 0
+        for i in range(len(qsizes)):
+            if qsizes[i] < min_qsize:
+                min_qsize = qsizes[i]
+                min_idx = i
+        return min_idx
 
     def handle(self) -> None:
         """
@@ -74,10 +100,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             print(data)
             # Find approximately the shortest queue
             # queue_idx = self.find_shortest_queue()
-            # queue_idx = 0
             # Put the task into the shortest queue
-            request_content_queue.put((self, data_dict))
-            print("Task sent to queue.")
+            # execution_threads[queue_idx].put_task(task=(self, data_dict))
+            response = bytes(data, "utf-8")
+            self.request.sendall(response)
 
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -88,7 +114,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 
-def main() -> None:
+def main():
 
     host_default = "0.0.0.0"
     port_default = 9999
@@ -112,9 +138,6 @@ def main() -> None:
     torch_model_filepath = "./saved_models/bert-base-cased-squad2_model.pt"
     tokenizer_filepath = "./saved_models/bert-base-cased-squad2_tokenizer.pt"
 
-    global request_content_queue
-    request_content_queue = queue.Queue()
-
     # Number of inference sessions.
     # Each inference session gets executed in an independent execution thread.
     global execution_threads
@@ -125,7 +148,7 @@ def main() -> None:
     else:
         raise RuntimeError("Unsupported inference engine type.")
     
-    print("Starting QA {} engine x {} ...".format(inference_engine_type, num_inference_sessions))
+    print("Starting {} engine x {} ...".format(inference_engine_type, num_inference_sessions))
     execution_threads = [InferenceExecutionThread(model_filepath=model_filepath, tokenizer_filepath=tokenizer_filepath, inference_engine_type=inference_engine_type) for _ in range(num_inference_sessions)]
 
     for execution_thread in execution_threads:

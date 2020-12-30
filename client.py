@@ -3,6 +3,7 @@
 import socket
 import sys
 import json
+import time
 
 
 HOST, PORT = "localhost", 9999
@@ -27,9 +28,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.sendall(bytes(data, "utf-8"))
 
         # Receive data from the server and shut down
+        start_time = time.time()
         received = str(sock.recv(1024), "utf-8")
+        end_time = time.time()
+        latency = (end_time - start_time) * 1000
         print("Answer: ")
         print(received)
+        print("(Latency: {} ms)".format(latency))
 
         # print("Sent:     {}".format(data))
         # print("Received: {}".format(received))
