@@ -153,7 +153,7 @@ optional arguments:
 
 #### AMD64 Platform
 
-ONNX Runtime CUDA inference session with one `intra_op_num_threads`. The ONNX inference session does not run entirely on GPU as some ONNX operators used for the QA model were not supported on GPU and fall back to CPU. ONNX Runtime CPU inference session was not used as it was ~10x slower than ONNX Runtime CUDA inference session. PyTorch CUDA inference was not used as it was ~3x slower than ONNX Runtime CUDA inference session. The amd64 platform is Intel i9-9900K + NVIDIA RTX 2080 TI. Latencies were measured from the clients.
+ONNX Runtime CUDA inference session with one `intra_op_num_threads`. The ONNX inference session does not run entirely on GPU as some ONNX operators used for the QA model were not supported on GPU and fall back to CPU. ONNX Runtime CPU inference session was not used as it was ~10x slower than ONNX Runtime CUDA inference session. PyTorch CUDA inference was not used as it was ~3x slower than ONNX Runtime CUDA inference session. The amd64 platform is Intel i9-9900K + NVIDIA RTX 2080 TI. Latencies were measured from the clients and the unit of the latency is millisecond.
 
 | Number of Inference Sessions |  1 Client  |  5 Clients |  20 Clients  |  50 Clients  |
 |:----------------------------:|:----------:|:----------:|:------------:|:------------:|
