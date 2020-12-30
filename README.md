@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Implementation of a simple multi-thread TCP/IP server for machine learning model inference. Specifically, Question and Answering (QA) service was implemented as an example. The server is designed to have a thread-safe queue where all the inference requests were hold and multiple inference engine worker threads will process the inference requests concurrently.
+Implementation of a simple multi-thread TCP/IP server for machine learning model inference. Specifically, Question and Answering (QA) service was implemented as an example. The server is designed to have a thread-safe queue where all the inference requests were hold and multiple inference engine worker threads will process the inference requests concurrently from.
 
 
 ## Usages
