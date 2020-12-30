@@ -27,23 +27,25 @@ To run Docker container for a client, we don't need GPU at all.
 $ docker run -it --rm --network=host -v $(pwd):/mnt qa-server:0.0.1
 ```
 
-#### One PC
+### Run Server and Client
 
-To run a server.
+#### Local Host
+
+To run a server on one local PC.
 
 
 ```
 $ python server.py --host localhost
 ```
 
-To run a client.
+To run a client on the same local PC.
 
 
 ```
 $ python client.py --host localhost
 ```
 
-#### Multiple PC
+#### Host Service on Server
 
 To run a server on one PC.
 
@@ -52,7 +54,7 @@ To run a server on one PC.
 $ python server.py --host 0.0.0.0
 ```
 
-To run a client on another PC.
+To run a client connecting to the server from another one local PC.
 
 
 ```
