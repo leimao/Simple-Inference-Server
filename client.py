@@ -6,6 +6,7 @@ import json
 import time
 import argparse
 
+
 def client_session(host, port) -> None:
 
     # Create a socket (SOCK_STREAM means a TCP socket)
@@ -36,14 +37,23 @@ def client_session(host, port) -> None:
             print("(Latency: {} ms)".format(latency))
             print("-" * 50)
 
+
 def main() -> None:
 
     host_default = "localhost"
     port_default = 9999
 
-    parser = argparse.ArgumentParser(description="Question and answer server.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--host", type=str, help="Default host IP.", default=host_default)
-    parser.add_argument("--port", type=int, help="Default port ID.", default=port_default)
+    parser = argparse.ArgumentParser(
+        description="Question and answer server.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--host",
+                        type=str,
+                        help="Default host IP.",
+                        default=host_default)
+    parser.add_argument("--port",
+                        type=int,
+                        help="Default port ID.",
+                        default=port_default)
 
     argv = parser.parse_args()
 
@@ -52,6 +62,7 @@ def main() -> None:
 
     client_session(host=host, port=port)
 
+
 if __name__ == "__main__":
-    
+
     main()

@@ -12,6 +12,7 @@ from tqdm import tqdm
 from multiprocessing import Pool
 from functools import partial
 
+
 def run_imap_unordered_multiprocessing(func, argument_list, num_processes):
     """
     https://leimao.github.io/blog/Python-tqdm-Multiprocessing/
@@ -20,22 +21,30 @@ def run_imap_unordered_multiprocessing(func, argument_list, num_processes):
     pool = Pool(processes=num_processes)
 
     result_list_tqdm = []
-    for result in tqdm(pool.imap_unordered(func=func, iterable=argument_list), total=len(argument_list)):
+    for result in tqdm(pool.imap_unordered(func=func, iterable=argument_list),
+                       total=len(argument_list)):
         result_list_tqdm.append(result)
 
     return result_list_tqdm
+
 
 def run_apply_async_multiprocessing(func, argument_list, num_processes):
 
     pool = Pool(processes=num_processes)
 
-    jobs = [pool.apply_async(func=func, args=(*argument,)) if isinstance(argument, tuple) else pool.apply_async(func=func, args=(argument,)) for argument in argument_list]
+    jobs = [
+        pool.apply_async(func=func, args=(*argument, )) if isinstance(
+            argument, tuple) else pool.apply_async(func=func,
+                                                   args=(argument, ))
+        for argument in argument_list
+    ]
     pool.close()
     result_list_tqdm = []
     for job in tqdm(jobs):
         result_list_tqdm.append(job.get())
 
     return result_list_tqdm
+
 
 def client_session(host, port, num_requests) -> float:
 
@@ -63,7 +72,7 @@ def client_session(host, port, num_requests) -> float:
             latencies.append(latency)
 
     latency_mean = np.mean(latencies)
-    
+
     return latency_mean
 
 
@@ -75,12 +84,29 @@ def main() -> None:
     num_total_clients_default = 100
     num_request_per_client_default = 10
 
-    parser = argparse.ArgumentParser(description="Question and answer server.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--host", type=str, help="Default host IP.", default=host_default)
-    parser.add_argument("--port", type=int, help="Default port ID.", default=port_default)
-    parser.add_argument("--num_simultaneous_clients", type=int, help="Number of simultaneous clients.", default=num_simultaneous_clients_default)
-    parser.add_argument("--num_total_clients", type=int, help="Number of total clients.", default=num_total_clients_default)
-    parser.add_argument("--num_request_per_client", type=int, help="Number of request per client.", default=num_request_per_client_default)
+    parser = argparse.ArgumentParser(
+        description="Question and answer server.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--host",
+                        type=str,
+                        help="Default host IP.",
+                        default=host_default)
+    parser.add_argument("--port",
+                        type=int,
+                        help="Default port ID.",
+                        default=port_default)
+    parser.add_argument("--num_simultaneous_clients",
+                        type=int,
+                        help="Number of simultaneous clients.",
+                        default=num_simultaneous_clients_default)
+    parser.add_argument("--num_total_clients",
+                        type=int,
+                        help="Number of total clients.",
+                        default=num_total_clients_default)
+    parser.add_argument("--num_request_per_client",
+                        type=int,
+                        help="Number of request per client.",
+                        default=num_request_per_client_default)
 
     argv = parser.parse_args()
 
@@ -93,9 +119,12 @@ def main() -> None:
     num_processes = num_simultaneous_clients
     num_requests = num_request_per_client
 
-    argument_list = [(host, port, num_requests) for _ in range(num_total_clients)]
+    argument_list = [(host, port, num_requests)
+                     for _ in range(num_total_clients)]
 
-    latencies = run_apply_async_multiprocessing(func=client_session, argument_list=argument_list, num_processes=num_processes)
+    latencies = run_apply_async_multiprocessing(func=client_session,
+                                                argument_list=argument_list,
+                                                num_processes=num_processes)
 
     latency_mean = np.mean(latencies)
     latency_std = np.std(latencies)
@@ -104,6 +133,7 @@ def main() -> None:
     print("Mean: {} ms".format(latency_mean))
     print("Std: {} ms".format(latency_std))
 
+
 if __name__ == "__main__":
-    
+
     main()

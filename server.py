@@ -16,8 +16,10 @@ class InferenceExecutionThread(threading.Thread):
     """
     Inference execution thread.
     """
-
-    def __init__(self, model_filepath: str, tokenizer_filepath: str, inference_engine_type: str = "onnx") -> None:
+    def __init__(self,
+                 model_filepath: str,
+                 tokenizer_filepath: str,
+                 inference_engine_type: str = "onnx") -> None:
 
         super(InferenceExecutionThread, self).__init__()
         # Python queue library is thread-safe.
@@ -27,9 +29,13 @@ class InferenceExecutionThread(threading.Thread):
         self.tokenizer_filepath = tokenizer_filepath
         self.inference_engine_type = inference_engine_type
         if self.inference_engine_type == "onnx":
-            self.inference_session = QaOnnxInferenceSession(model_filepath=self.model_filepath, tokenizer_filepath=self.tokenizer_filepath)
+            self.inference_session = QaOnnxInferenceSession(
+                model_filepath=self.model_filepath,
+                tokenizer_filepath=self.tokenizer_filepath)
         elif self.inference_engine_type == "pytorch":
-            self.inference_session = QaTorchInferenceSession(model_filepath=self.model_filepath, tokenizer_filepath=self.tokenizer_filepath)
+            self.inference_session = QaTorchInferenceSession(
+                model_filepath=self.model_filepath,
+                tokenizer_filepath=self.tokenizer_filepath)
         else:
             raise RuntimeError("Unsupported inference engine type.")
 
@@ -40,11 +46,15 @@ class InferenceExecutionThread(threading.Thread):
 
         while True:
             if not request_content_queue.empty():
-                print("Current Thread: {}, Number of Active Threads: {}".format(threading.current_thread().name, threading.active_count()))
+                print(
+                    "Current Thread: {}, Number of Active Threads: {}".format(
+                        threading.current_thread().name,
+                        threading.active_count()))
                 handler, data_dict = request_content_queue.get()
                 question = data_dict["question"]
                 text = data_dict["text"]
-                answer = self.inference_session.run(question=question, text=text)
+                answer = self.inference_session.run(question=question,
+                                                    text=text)
                 if answer in ["", "[CLS]"]:
                     answer = "Unknown"
                 response = bytes(answer, "utf-8")
@@ -58,7 +68,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """
     TCP request handler.
     """
-
     def handle(self) -> None:
         """
         Handle method to override.
@@ -95,12 +104,27 @@ def main() -> None:
     num_inference_sessions_default = 2
     inference_engine_type_default = "onnx"
 
-    parser = argparse.ArgumentParser(description="Question and answer server.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--host", type=str, help="Default host IP.", default=host_default)
-    parser.add_argument("--port", type=int, help="Default port ID.", default=port_default)
-    parser.add_argument("--num_inference_sessions", type=int, help="Number of inference sessions.", default=num_inference_sessions_default)
-    parser.add_argument("--inference_engine_type", type=str, choices=["onnx", "pytorch"], help="Inference engine type.", default=inference_engine_type_default)
-    
+    parser = argparse.ArgumentParser(
+        description="Question and answer server.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--host",
+                        type=str,
+                        help="Default host IP.",
+                        default=host_default)
+    parser.add_argument("--port",
+                        type=int,
+                        help="Default port ID.",
+                        default=port_default)
+    parser.add_argument("--num_inference_sessions",
+                        type=int,
+                        help="Number of inference sessions.",
+                        default=num_inference_sessions_default)
+    parser.add_argument("--inference_engine_type",
+                        type=str,
+                        choices=["onnx", "pytorch"],
+                        help="Inference engine type.",
+                        default=inference_engine_type_default)
+
     argv = parser.parse_args()
 
     host = argv.host
@@ -113,7 +137,7 @@ def main() -> None:
     tokenizer_filepath = "./saved_models/bert-base-cased-squad2_tokenizer.pt"
 
     global request_content_queue
-    # Do not use multiple queues. 
+    # Do not use multiple queues.
     # It will slow down Python application significantly.
     request_content_queue = queue.Queue()
 
@@ -126,9 +150,15 @@ def main() -> None:
         model_filepath = torch_model_filepath
     else:
         raise RuntimeError("Unsupported inference engine type.")
-    
-    print("Starting QA {} engine x {} ...".format(inference_engine_type, num_inference_sessions))
-    execution_threads = [InferenceExecutionThread(model_filepath=model_filepath, tokenizer_filepath=tokenizer_filepath, inference_engine_type=inference_engine_type) for _ in range(num_inference_sessions)]
+
+    print("Starting QA {} engine x {} ...".format(inference_engine_type,
+                                                  num_inference_sessions))
+    execution_threads = [
+        InferenceExecutionThread(model_filepath=model_filepath,
+                                 tokenizer_filepath=tokenizer_filepath,
+                                 inference_engine_type=inference_engine_type)
+        for _ in range(num_inference_sessions)
+    ]
 
     for execution_thread in execution_threads:
         execution_thread.start()
@@ -142,9 +172,10 @@ def main() -> None:
         print("QA Server")
         print("=" * 50)
         server.serve_forever()
-    
+
     for execution_thread in execution_threads:
         execution_thread.join()
+
 
 if __name__ == "__main__":
 
