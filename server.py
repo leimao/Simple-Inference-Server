@@ -90,7 +90,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 def main() -> None:
 
-    host_default = "localhost"
+    host_default = "0.0.0.0"
     port_default = 9999
     num_inference_sessions_default = 2
     inference_engine_type_default = "onnx"

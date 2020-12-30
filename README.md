@@ -19,7 +19,7 @@ docker run -it --rm --gpus device=0 --network=host -v $(pwd):/mnt qa-server:0.0.
 ```
 
 ```
-python server.py
+python server.py --host localhost
 ```
 
 To run a client, please run the following command.
@@ -30,7 +30,7 @@ docker run -it --rm --network=host -v $(pwd):/mnt qa-server:0.0.1
 ```
 
 ```
-python client.py
+python client.py --host localhost
 ```
 
 #### Multiple PC
@@ -38,7 +38,11 @@ python client.py
 To run a server on one PC, please run the following command.
 
 ```
-docker run -it --rm --gpus device=0 -p 9999:9999 -v $(pwd):/mnt qa-server:0.0.1
+docker run -it --rm --gpus device=0 --network=host -v $(pwd):/mnt qa-server:0.0.1
+```
+
+```
+python server.py --host 0.0.0.0
 ```
 
 To run a client on another PC, please run the following command.
@@ -56,7 +60,7 @@ python client.py --host <server-IP>
 
 #### AMD64 Platform
 
-ONNX Runtime CUDA inference session with one `intra_op_num_threads`. The ONNX inference session does not run entirely on GPU as some ONNX operators were not supported on GPU and fall back to CPU. ONNX Runtime CPU inference session was not used as it was 10x slower than CUDA inference session. Server and clients on one single PC (I know this is bad for stress test). Intel i9-9900K + NVIDIA RTX 2080 TI. Latency measured from the clients.
+ONNX Runtime CUDA inference session with one `intra_op_num_threads`. The ONNX inference session does not run entirely on GPU as some ONNX operators were not supported on GPU and fall back to CPU. ONNX Runtime CPU inference session was not used as it was ~10x slower than CUDA inference session. The amd64 platform is Intel i9-9900K + NVIDIA RTX 2080 TI. Latency measured from the clients.
 
 | Number of Inference Sessions |  1 Client  |  5 Clients |  20 Clients  |  50 Clients  |
 |:----------------------------:|:----------:|:----------:|:------------:|:------------:|
@@ -67,4 +71,4 @@ ONNX Runtime CUDA inference session with one `intra_op_num_threads`. The ONNX in
 
 #### ARM64 Platform
 
-
+ONNX Runtime CPU inference session was used for the stress test in this case, since there is no ONNX Runtime GPU version directly available via `pip`. The inference latency was ~30x slower than the inference latency from the CUDA inference session on the amd64 platform above. The arm64 platform is Jetson-Nano. Latency measured from the clients.
