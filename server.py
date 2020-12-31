@@ -86,10 +86,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             data_dict = json.loads(data)
             print("{} wrote:".format(self.client_address[0]))
             print(data)
-            # Find approximately the shortest queue
-            # queue_idx = self.find_shortest_queue()
-            # queue_idx = 0
-            # Put the task into the shortest queue
             request_content_queue.put((self, data_dict))
             print("Task sent to queue.")
 
@@ -144,6 +140,9 @@ def main() -> None:
     global request_content_queue
     # Do not use multiple queues.
     # It will slow down Python application significantly.
+    # I have tested for each worker thread we have a queue.
+    # The requests were put evenly into each of the queues.
+    # But this slows down the latency significantly.
     request_content_queue = queue.Queue()
 
     # Number of inference sessions.
